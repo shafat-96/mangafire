@@ -1,11 +1,9 @@
-import { SRC_BASE_URL, SRC_HOME_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER, ACCEPT_LANGUAGE_HEADER } from '../utils/index';
+import { SRC_HOME_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-
-//  import puppeteer from 'puppeteer-extra';
-// import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-// import superagent, { SuperAgent } from 'superagent';
-import axios, { AxiosError } from 'axios';
+import api from '../utils/axios';
+import { AxiosError } from 'axios';
 import { load, type CheerioAPI, type SelectorType } from 'cheerio';
+import { type Element } from 'domhandler';
 import { ScrapedHomePage } from '../types/parsers/index';
 
 async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
@@ -36,16 +34,7 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
         // const content = await page.content();
 
         // await browser.close();
-        const axiosConfig = {
-            headers: {
-                'User-Agent': USER_AGENT_HEADER,
-                'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                'Accept': ACCEPT_HEADER,
-                'Referer': SRC_BASE_URL,
-                'Accept-Language': ACCEPT_LANGUAGE_HEADER
-            }
-        };
-        const content = await axios.get(SRC_HOME_URL as string, axiosConfig);
+        const content = await api.get(SRC_HOME_URL as string);
 
         const $: CheerioAPI = load(content.data);
         const releasingManga: SelectorType = '#top-trending .container .swiper .swiper-wrapper .swiper-slide';
@@ -55,7 +44,7 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
         const recentlyUpdatedManga: SelectorType = '.tab-content[data-name="all"] .unit';
         const newReleaseManga: SelectorType = ' .swiper-container .swiper.completed  .card-md .swiper-slide.unit';
 
-        $(releasingManga).each((i, el) => {
+        $(releasingManga).each((i: number, el: Element) => {
             res.releasingManga.push({
                 id: $(el).find('.info .above a')?.attr('href') || null,
                 status: $(el).find('.info .above span')?.text()?.trim() || null,
@@ -65,12 +54,12 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
                 genres:
                     $(el)
                         .find('.info .below div a')
-                        ?.map((i, el) => $(el).text().trim())
+                        ?.map((i: number, el: Element) => $(el).text().trim())
                         .get() || null,
                 poster: $(el).find('.swiper-inner a div img')?.attr('src')?.trim() || null
             });
         });
-        $(mostViewedMangaDay).each((i, el) => {
+                                $(mostViewedMangaDay).each((i: number, el: Element) => {
             res.mostViewedManga.day.push({
                 id: $(el).find('.swiper-slide    a')?.attr('href') || null,
                 name: $(el).find('.swiper-slide    a span')?.text()?.trim() || null,
@@ -78,7 +67,7 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
                 poster: $(el).find('.swiper-slide    a .poster img')?.attr('src')?.trim() || null
             });
         });
-        $(mostViewedMangaWeek).each((i, el) => {
+                                $(mostViewedMangaWeek).each((i: number, el: Element) => {
             res.mostViewedManga.week.push({
                 id: $(el).find('.swiper-slide    a')?.attr('href') || null,
                 name: $(el).find('.swiper-slide    a span')?.text()?.trim() || null,
@@ -86,7 +75,7 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
                 poster: $(el).find('.swiper-slide    a .poster img')?.attr('src')?.trim() || null
             });
         });
-        $(mostViewedMangaMonth).each((i, el) => {
+                                $(mostViewedMangaMonth).each((i: number, el: Element) => {
             res.mostViewedManga.month.push({
                 id: $(el).find('.swiper-slide  a')?.attr('href') || null,
                 name: $(el).find('.swiper-slide a span')?.text()?.trim() || null,
@@ -94,7 +83,7 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
                 poster: $(el).find('.swiper-slide  a .poster img')?.attr('src')?.trim() || null
             });
         });
-        $(recentlyUpdatedManga).each((i, el) => {
+                                $(recentlyUpdatedManga).each((i: number, el: Element) => {
             res.recentlyUpdatedManga.push({
                 id: $(el).find('.inner  a')?.attr('href') || null,
                 name: $(el).find('.swiper-slide a span')?.text()?.trim() || null,
@@ -103,14 +92,14 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
                 latestChapters:
                     $(el)
                         .find('.info .content[data-name="chap"] li')
-                        ?.map((i, el) => ({
+                        ?.map((i: number, el: Element) => ({
                             chapterName: $(el).find('span').first().text().trim(),
                             releaseTime: $(el).find('span').last().text().trim()
                         }))
                         .get() || null
             });
         });
-        $(newReleaseManga).each((i, el) => {
+                                $(newReleaseManga).each((i: number, el: Element) => {
             res.newReleaseManga.push({
                 id: $(el).find('a')?.attr('href') || null,
                 name: $(el).find('a span')?.text()?.trim() || null,
@@ -120,15 +109,9 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
 
         return res;
     } catch (err: any) {
-        if (axios.isAxiosError(err)) {
-            console.error('Axios error occurred:');
-            console.error('Error status:', err.response?.status);
-            console.error('Error status text:', err.response?.statusText);
-            console.error('Response Headers:', err.response?.headers);
-            console.error('Request Config:', err.config);
-            throw createHttpError(err.response?.status || 500, err.response?.statusText || 'Something went wrong');
+        if (err instanceof AxiosError) {
+            throw createHttpError(err?.response?.status || 500, err?.response?.statusText || 'Something went wrong');
         }
-        console.error('An unexpected error occurred:', err.message);
         throw createHttpError.InternalServerError(err?.message);
     }
     // or handle the error in a different way

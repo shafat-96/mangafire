@@ -1,7 +1,9 @@
-import { SRC_BASE_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER, ACCEPT_LANGUAGE_HEADER } from '../utils/index';
+import { SRC_BASE_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-import axios, { AxiosError } from 'axios';
+import api from '../utils/axios';
+import { AxiosError } from 'axios';
 import { load, type CheerioAPI } from 'cheerio';
+import { type Element } from 'domhandler';
 import { type ScrapedLatestPage, type MangaCategoryResult, type MangaChapter } from '../types/parsers/index';
 
 export type LatestPageType = 'updated' | 'newest' | 'added';
@@ -16,17 +18,9 @@ async function scrapeLatestPage(pageType: LatestPageType, page: number = 1): Pro
 
     try {
         const scrapeUrl = `${SRC_BASE_URL}/${pageType}?page=${page}`;
-        const content = await axios.get(scrapeUrl, {
-            headers: {
-                'User-Agent': USER_AGENT_HEADER,
-                'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                Accept: ACCEPT_HEADER,
-                Referer: SRC_BASE_URL,
-                'Accept-Language': ACCEPT_LANGUAGE_HEADER,
-            },
-        });
+        const content = await api.get(scrapeUrl);
 
-        const $: CheerioAPI = load(content.data);
+                        const $: CheerioAPI = load(content.data);
 
         const totalMangaText = $('section.mt-5 > .head > span').text().trim();
         const totalMangaMatch = totalMangaText.match(/(\d{1,3}(,\d{3})*)/);
@@ -44,7 +38,7 @@ async function scrapeLatestPage(pageType: LatestPageType, page: number = 1): Pro
         res.totalPages = totalPages;
         res.hasNextPage = page < totalPages;
 
-        $('div.original.card-lg > div.unit').each((i, el) => {
+                        $('div.original.card-lg > div.unit').each((i: number, el: Element) => {
             const manga: MangaCategoryResult = {
                 id: $(el).find('a.poster').attr('href')?.replace('/manga/', '') || null,
                 title: $(el).find('div.info > a').text().trim() || null,
@@ -53,7 +47,7 @@ async function scrapeLatestPage(pageType: LatestPageType, page: number = 1): Pro
                 chapters: [],
             };
 
-            $(el).find('ul.content[data-name="chap"] > li').each((i, chapEl) => {
+                                    $(el).find('ul.content[data-name="chap"] > li').each((i: number, chapEl: Element) => {
                 const chapter: MangaChapter = {
                     url: $(chapEl).find('a').attr('href') || null,
                     title: $(chapEl).find('a').attr('title') || null,

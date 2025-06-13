@@ -1,9 +1,11 @@
-import axios, { AxiosError } from 'axios';
-import { load } from 'cheerio';
+import { AxiosError } from 'axios';
+import { load, type CheerioAPI } from 'cheerio';
+import { type Element } from 'domhandler';
 import createHttpError, { HttpError } from 'http-errors';
 import {
-    SRC_BASE_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER, ACCEPT_LANGUAGE_HEADER
+    SRC_BASE_URL
 } from '../utils/index';
+import api from '../utils/axios';
 import {
     MangaChapter,
     ScrapedSearchResults,
@@ -20,22 +22,14 @@ export const scrapeSearchResults = async (keyword: string, page: number = 1): Pr
     try {
         const scrapeUrl = `${SRC_BASE_URL}/filter?keyword=${keyword}&page=${page}`;
 
-        const content = await axios.get(scrapeUrl, {
-            headers: {
-                'User-Agent': USER_AGENT_HEADER,
-                'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                'Accept': ACCEPT_HEADER,
-                'Referer': SRC_BASE_URL,
-                'Accept-Language': ACCEPT_LANGUAGE_HEADER
-            }
-        });
+        const content = await api.get(scrapeUrl);
 
         const $ = load(content.data);
 
         let totalPages = 0;
         const pageLinks = $('ul.pagination > li.page-item > a');
         if (pageLinks.length > 0) {
-            pageLinks.each((i, el) => {
+                        pageLinks.each((i: number, el: Element) => {
                 const pageNum = parseInt($(el).text());
                 if (!isNaN(pageNum) && pageNum > totalPages) {
                     totalPages = pageNum;
@@ -57,7 +51,7 @@ export const scrapeSearchResults = async (keyword: string, page: number = 1): Pr
         }
         res.totalPages = totalPages;
 
-        $('div.original.card-lg > div.unit').each((i, el) => {
+                $('div.original.card-lg > div.unit').each((i: number, el: Element) => {
             const searchResult: SearchResult = {
                 id: $(el).find('a.poster').attr('href')?.replace('/manga/', '') || null,
                 title: $(el).find('div.info > a').text().trim() || null,
@@ -66,7 +60,7 @@ export const scrapeSearchResults = async (keyword: string, page: number = 1): Pr
                 chapters: [],
             };
 
-            $(el).find('ul.content[data-name="chap"] > li').each((i, chapEl) => {
+                        $(el).find('ul.content[data-name="chap"] > li').each((i: number, chapEl: Element) => {
                 const chapter: MangaChapter = {
                     url: $(chapEl).find('a').attr('href') || null,
                     title: $(chapEl).find('a').attr('title') || null,

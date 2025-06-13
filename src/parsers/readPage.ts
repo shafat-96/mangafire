@@ -1,7 +1,9 @@
-import { SRC_BASE_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER, ACCEPT_LANGUAGE_HEADER } from '../utils/index';
+import { SRC_BASE_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-import axios, { AxiosError } from 'axios';
+import api from '../utils/axios';
+import { AxiosError } from 'axios';
 import { load } from 'cheerio';
+import { type Element } from 'domhandler';
 import { type ScrapedManga, type MangaDetails, type MangaChapter, type RelatedManga, Chapter } from '../types/parsers/index';
 
 export async function getChapters(
@@ -9,16 +11,11 @@ export async function getChapters(
     language: string = "en"
 ): Promise<Chapter[] | HttpError> {
     try {
-        const response = await axios.get(
+        const response = await api.get(
             `${SRC_BASE_URL}/ajax/read/${mangaId.split(".")[1]}/chapter/${language.toLowerCase()}`,
             {
                 headers: {
-                    'User-Agent': USER_AGENT_HEADER,
-                    'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                    Accept: ACCEPT_HEADER,
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Referer': SRC_BASE_URL,
-                    'Accept-Language': ACCEPT_LANGUAGE_HEADER,
                 }
             }
         );
@@ -27,7 +24,7 @@ export async function getChapters(
         const $ = load(responseJson.result.html);
         const chapters: Chapter[] = [];
 
-        $("li").each((_, li) => {
+                $("li").each((_: number, li: Element) => {
             const a = $(li).find("a");
             const title = a.find('span:first-child').text().trim();
             const releaseDate = a.find('span:last-child').text().trim();
@@ -51,16 +48,11 @@ export async function getChapters(
 
 export async function getChapterImages(chapterId: string): Promise<string[] | HttpError> {
     try {
-        const response = await axios.get(
+        const response = await api.get(
             `${SRC_BASE_URL}/ajax/read/chapter/${chapterId}`,
             {
                 headers: {
-                    'User-Agent': USER_AGENT_HEADER,
-                    'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                    Accept: ACCEPT_HEADER,
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Referer': SRC_BASE_URL,
-                    'Accept-Language': ACCEPT_LANGUAGE_HEADER
                 }
             }
         );
@@ -79,20 +71,12 @@ export async function getChapterImages(chapterId: string): Promise<string[] | Ht
 export async function scrapeChaptersFromInfoPage(mangaSlug: string): Promise<MangaChapter[] | HttpError> {
     try {
         const scrapeUrl = `${SRC_BASE_URL}/manga/${mangaSlug}`;
-        const content = await axios.get(scrapeUrl, {
-            headers: {
-                'User-Agent': USER_AGENT_HEADER,
-                'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                Accept: ACCEPT_HEADER,
-                Referer: SRC_BASE_URL,
-                'Accept-Language': ACCEPT_LANGUAGE_HEADER,
-            },
-        });
+        const content = await api.get(scrapeUrl);
 
         const $ = load(content.data);
         const chapters: MangaChapter[] = [];
 
-        $('ul.scroll-sm li.item').each((i, el) => {
+                $('ul.scroll-sm li.item').each((i: number, el: Element) => {
             const chapter: MangaChapter = {
                 url: $(el).find('a').attr('href') || null,
                 title: $(el).find('a').attr('title') || null,

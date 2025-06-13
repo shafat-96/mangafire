@@ -1,7 +1,9 @@
-import { SRC_BASE_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER, ACCEPT_LANGUAGE_HEADER } from '../utils/index';
+import { SRC_BASE_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-import axios, { AxiosError } from 'axios';
+import api from '../utils/axios';
+import { AxiosError } from 'axios';
 import { load, type CheerioAPI } from 'cheerio';
+import { type Element } from 'domhandler';
 import { type ScrapedManga, type MangaDetails, type RelatedManga } from '../types/parsers/index';
 
 async function scrapeMangaInfo(id: string): Promise<ScrapedManga | HttpError> {
@@ -25,17 +27,9 @@ async function scrapeMangaInfo(id: string): Promise<ScrapedManga | HttpError> {
 
     try {
         const scrapeUrl = `${SRC_BASE_URL}/manga/${id}`;
-        const content = await axios.get(scrapeUrl, {
-            headers: {
-                'User-Agent': USER_AGENT_HEADER,
-                'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                Accept: ACCEPT_HEADER,
-                Referer: SRC_BASE_URL,
-                'Accept-Language': ACCEPT_LANGUAGE_HEADER,
-            },
-        });
+        const content = await api.get(scrapeUrl);
 
-        const $ = load(content.data);
+                        const $ = load(content.data);
 
         const mangaInfo: MangaDetails = {
             title: $('h1[itemprop="name"]').text().trim(),
@@ -46,12 +40,12 @@ async function scrapeMangaInfo(id: string): Promise<ScrapedManga | HttpError> {
             description: $('.description').text().replace('Read more +', '').trim(),
             author: $('.meta div:contains("Author:") a').text().trim(),
             published: $('.meta div:contains("Published:")').text().replace('Published:', '').trim(),
-            genres: $('.meta div:contains("Genres:") a').map((i, el) => $(el).text().trim()).get(),
+                        genres: $('.meta div:contains("Genres:") a').map((i: number, el: Element) => $(el).text().trim()).get(),
             rating: $('.rating-box .live-score').text().trim(),
         };
 
         // Scraping Similar Manga (Trending)
-        $('section.side-manga.default-style div.original.card-sm.body a.unit').each((i, el) => {
+                $('section.side-manga.default-style div.original.card-sm.body a.unit').each((i: number, el: Element) => {
             const manga: RelatedManga = {
                 id: $(el).attr('href')?.split('/').pop() || null,
                 name: $(el).find('.info h6').text().trim() || null,

@@ -1,11 +1,9 @@
-import { SRC_BASE_URL, SRC_HOME_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER, ACCEPT_LANGUAGE_HEADER } from '../utils/index';
+import { SRC_BASE_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-
-//  import puppeteer from 'puppeteer-extra';
-// import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-// import superagent, { SuperAgent } from 'superagent';
-import axios, { AxiosError } from 'axios';
-import { load, type CheerioAPI, type SelectorType } from 'cheerio';
+import api from '../utils/axios';
+import { AxiosError } from 'axios';
+import { load, type CheerioAPI } from 'cheerio';
+import { type Element } from 'domhandler';
 import { type ScrapedMangaGenre, type MangaCategoryResult, type MangaChapter } from '../types/parsers/index';
 import { type MangaGenre } from '../types/manga';
 
@@ -37,17 +35,9 @@ async function scrapedMangaGenre(genreName: MangaGenre, page: number = 1): Promi
 
         // await browser.close();
         const scrapeUrl: URL = new URL(`${SRC_BASE_URL}/genre/${genreName}`);
-        const content = await axios.get(`${scrapeUrl}?page=${page} `, {
-            headers: {
-                'User-Agent': USER_AGENT_HEADER,
-                'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                Accept: ACCEPT_HEADER,
-                Referer: SRC_BASE_URL,
-                'Accept-Language': ACCEPT_LANGUAGE_HEADER
-            }
-        });
+        const content = await api.get(`${scrapeUrl}?page=${page} `);
 
-        const $: CheerioAPI = load(content.data);
+                        const $: CheerioAPI = load(content.data);
 
         const totalMangaText = $('section.mt-5 > .head > span').text().trim();
         res.totalEntities = totalMangaText;
@@ -66,7 +56,7 @@ async function scrapedMangaGenre(genreName: MangaGenre, page: number = 1): Promi
         res.totalPages = totalPages;
         res.hasNextPage = page < totalPages;
 
-        $('div.original.card-lg > div.unit').each((i, el) => {
+                        $('div.original.card-lg > div.unit').each((i: number, el: Element) => {
             const manga: MangaCategoryResult = {
                 id: $(el).find('a.poster').attr('href')?.replace('/manga/', '') || null,
                 title: $(el).find('div.info > a').text().trim() || null,
@@ -75,7 +65,7 @@ async function scrapedMangaGenre(genreName: MangaGenre, page: number = 1): Promi
                 chapters: [],
             };
 
-            $(el).find('ul.content[data-name="chap"] > li').each((i, chapEl) => {
+                                    $(el).find('ul.content[data-name="chap"] > li').each((i: number, chapEl: Element) => {
                 const chapter: MangaChapter = {
                     url: $(chapEl).find('a').attr('href') || null,
                     title: $(chapEl).find('a').attr('title') || null,
