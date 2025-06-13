@@ -1,4 +1,4 @@
-import { SRC_BASE_URL, SRC_HOME_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER } from '../utils/index';
+import { SRC_BASE_URL, SRC_HOME_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER, ACCEPT_LANGUAGE_HEADER } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
 
 //  import puppeteer from 'puppeteer-extra';
@@ -42,7 +42,8 @@ async function scrapedMangaGenre(genreName: MangaGenre, page: number = 1): Promi
                 'User-Agent': USER_AGENT_HEADER,
                 'Accept-Encoding': ACCEPT_ENCODING_HEADER,
                 Accept: ACCEPT_HEADER,
-                Referer: SRC_BASE_URL
+                Referer: SRC_BASE_URL,
+                'Accept-Language': ACCEPT_LANGUAGE_HEADER
             }
         });
 

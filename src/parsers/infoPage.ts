@@ -1,4 +1,4 @@
-import { SRC_BASE_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER } from '../utils/index';
+import { SRC_BASE_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER, ACCEPT_LANGUAGE_HEADER } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
 import axios, { AxiosError } from 'axios';
 import { load, type CheerioAPI } from 'cheerio';
@@ -31,6 +31,7 @@ async function scrapeMangaInfo(id: string): Promise<ScrapedManga | HttpError> {
                 'Accept-Encoding': ACCEPT_ENCODING_HEADER,
                 Accept: ACCEPT_HEADER,
                 Referer: SRC_BASE_URL,
+                'Accept-Language': ACCEPT_LANGUAGE_HEADER,
             },
         });
 

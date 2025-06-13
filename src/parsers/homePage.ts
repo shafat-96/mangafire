@@ -1,4 +1,4 @@
-import { SRC_BASE_URL, SRC_HOME_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER } from '../utils/index';
+import { SRC_BASE_URL, SRC_HOME_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER, ACCEPT_LANGUAGE_HEADER } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
 
 //  import puppeteer from 'puppeteer-extra';
@@ -36,17 +36,18 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
         // const content = await page.content();
 
         // await browser.close();
-        const content = await axios.get(SRC_HOME_URL as string, {
+        const axiosConfig = {
             headers: {
                 'User-Agent': USER_AGENT_HEADER,
                 'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                Accept: ACCEPT_HEADER,
-                Referer: SRC_BASE_URL
+                'Accept': ACCEPT_HEADER,
+                'Referer': SRC_BASE_URL,
+                'Accept-Language': ACCEPT_LANGUAGE_HEADER
             }
-        });
+        };
+        const content = await axios.get(SRC_HOME_URL as string, axiosConfig);
 
         const $: CheerioAPI = load(content.data);
-        console.log(content.data);
         const releasingManga: SelectorType = '#top-trending .container .swiper .swiper-wrapper .swiper-slide';
         const mostViewedMangaDay: SelectorType = '#most-viewed .tab-content[data-name="day"] .swiper-slide.unit';
         const mostViewedMangaWeek: SelectorType = '#most-viewed .tab-content[data-name="week"] .swiper-slide.unit';
@@ -119,9 +120,15 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
 
         return res;
     } catch (err: any) {
-        if (err instanceof AxiosError) {
-            throw createHttpError(err?.response?.status || 500, err?.response?.statusText || 'Something went wrong');
+        if (axios.isAxiosError(err)) {
+            console.error('Axios error occurred:');
+            console.error('Error status:', err.response?.status);
+            console.error('Error status text:', err.response?.statusText);
+            console.error('Response Headers:', err.response?.headers);
+            console.error('Request Config:', err.config);
+            throw createHttpError(err.response?.status || 500, err.response?.statusText || 'Something went wrong');
         }
+        console.error('An unexpected error occurred:', err.message);
         throw createHttpError.InternalServerError(err?.message);
     }
     // or handle the error in a different way
