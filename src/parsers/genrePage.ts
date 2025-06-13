@@ -41,7 +41,8 @@ async function scrapedMangaGenre(genreName: MangaGenre, page: number = 1): Promi
             headers: {
                 'User-Agent': USER_AGENT_HEADER,
                 'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                Accept: ACCEPT_HEADER
+                Accept: ACCEPT_HEADER,
+                Referer: SRC_BASE_URL
             }
         });
 

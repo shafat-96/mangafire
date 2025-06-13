@@ -1,4 +1,4 @@
-import { SRC_HOME_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER } from '../utils/index';
+import { SRC_BASE_URL, SRC_HOME_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
 
 //  import puppeteer from 'puppeteer-extra';
@@ -40,7 +40,8 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
             headers: {
                 'User-Agent': USER_AGENT_HEADER,
                 'Accept-Encoding': ACCEPT_ENCODING_HEADER,
-                Accept: ACCEPT_HEADER
+                Accept: ACCEPT_HEADER,
+                Referer: SRC_BASE_URL
             }
         });
 

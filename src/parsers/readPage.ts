@@ -17,6 +17,7 @@ export async function getChapters(
                     'Accept-Encoding': ACCEPT_ENCODING_HEADER,
                     Accept: ACCEPT_HEADER,
                     'X-Requested-With': 'XMLHttpRequest',
+                    'Referer': SRC_BASE_URL,
                 }
             }
         );
@@ -57,6 +58,7 @@ export async function getChapterImages(chapterId: string): Promise<string[] | Ht
                     'Accept-Encoding': ACCEPT_ENCODING_HEADER,
                     Accept: ACCEPT_HEADER,
                     'X-Requested-With': 'XMLHttpRequest',
+                    'Referer': SRC_BASE_URL
                 }
             }
         );
@@ -80,6 +82,7 @@ export async function scrapeChaptersFromInfoPage(mangaSlug: string): Promise<Man
                 'User-Agent': USER_AGENT_HEADER,
                 'Accept-Encoding': ACCEPT_ENCODING_HEADER,
                 Accept: ACCEPT_HEADER,
+                Referer: SRC_BASE_URL,
             },
         });
 

@@ -21,6 +21,7 @@ async function scrapeLatestPage(pageType: LatestPageType, page: number = 1): Pro
                 'User-Agent': USER_AGENT_HEADER,
                 'Accept-Encoding': ACCEPT_ENCODING_HEADER,
                 Accept: ACCEPT_HEADER,
+                Referer: SRC_BASE_URL,
             },
         });
 

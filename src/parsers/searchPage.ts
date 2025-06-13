@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { load } from 'cheerio';
 import createHttpError, { HttpError } from 'http-errors';
 import {
-    SRC_BASE_URL
+    SRC_BASE_URL, ACCEPT_HEADER, USER_AGENT_HEADER, ACCEPT_ENCODING_HEADER
 } from '../utils/index';
 import {
     MangaChapter,
@@ -22,9 +22,10 @@ export const scrapeSearchResults = async (keyword: string, page: number = 1): Pr
 
         const content = await axios.get(scrapeUrl, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
-                'Accept-Encoding': 'gzip,deflate,compress',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+                'User-Agent': USER_AGENT_HEADER,
+                'Accept-Encoding': ACCEPT_ENCODING_HEADER,
+                'Accept': ACCEPT_HEADER,
+                'Referer': SRC_BASE_URL
             }
         });
 
