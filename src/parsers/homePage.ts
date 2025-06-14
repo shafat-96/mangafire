@@ -1,6 +1,5 @@
-import { SRC_HOME_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-import api from '../utils/axios';
+import { client } from '../utils/axios';
 import { AxiosError } from 'axios';
 import { load, type CheerioAPI, type SelectorType } from 'cheerio';
 import { type Element } from 'domhandler';
@@ -34,7 +33,7 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
         // const content = await page.content();
 
         // await browser.close();
-        const content = await api.get(SRC_HOME_URL as string);
+        const content = await client.get('/home');
 
         const $: CheerioAPI = load(content.data);
         const releasingManga: SelectorType = '#top-trending .container .swiper .swiper-wrapper .swiper-slide';

@@ -1,6 +1,5 @@
-import { SRC_BASE_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-import api from '../utils/axios';
+import { client } from '../utils/axios';
 import { AxiosError } from 'axios';
 import { load, type CheerioAPI } from 'cheerio';
 import { type Element } from 'domhandler';
@@ -33,8 +32,7 @@ async function scrapedMangaCategory(category: MangaCategories, page: number = 1)
         // const content = await page.content();
 
         // await browser.close();
-        const scrapeUrl: URL = new URL(`${SRC_BASE_URL}/type/${category}`);
-        const content = await api.get(`${scrapeUrl}?page=${page} `);
+        const content = await client.get(`/type/${category}?page=${page}`);
 
                         const $: CheerioAPI = load(content.data);
 

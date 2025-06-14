@@ -1,6 +1,5 @@
-import { SRC_BASE_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-import api from '../utils/axios';
+import { client } from '../utils/axios';
 import { AxiosError } from 'axios';
 import { load } from 'cheerio';
 import { type Element } from 'domhandler';
@@ -11,8 +10,8 @@ export async function getChapters(
     language: string = "en"
 ): Promise<Chapter[] | HttpError> {
     try {
-        const response = await api.get(
-            `${SRC_BASE_URL}/ajax/read/${mangaId.split(".")[1]}/chapter/${language.toLowerCase()}`,
+        const response = await client.get(
+            `/ajax/read/${mangaId.split(".")[1]}/chapter/${language.toLowerCase()}`,
             {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -48,8 +47,8 @@ export async function getChapters(
 
 export async function getChapterImages(chapterId: string): Promise<string[] | HttpError> {
     try {
-        const response = await api.get(
-            `${SRC_BASE_URL}/ajax/read/chapter/${chapterId}`,
+        const response = await client.get(
+            `/ajax/read/chapter/${chapterId}`,
             {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -70,8 +69,7 @@ export async function getChapterImages(chapterId: string): Promise<string[] | Ht
 
 export async function scrapeChaptersFromInfoPage(mangaSlug: string): Promise<MangaChapter[] | HttpError> {
     try {
-        const scrapeUrl = `${SRC_BASE_URL}/manga/${mangaSlug}`;
-        const content = await api.get(scrapeUrl);
+        const content = await client.get(`/manga/${mangaSlug}`);
 
         const $ = load(content.data);
         const chapters: MangaChapter[] = [];

@@ -1,6 +1,5 @@
-import { SRC_BASE_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-import api from '../utils/axios';
+import { client } from '../utils/axios';
 import { AxiosError } from 'axios';
 import { load, type CheerioAPI } from 'cheerio';
 import { type Element } from 'domhandler';
@@ -26,8 +25,7 @@ async function scrapeMangaInfo(id: string): Promise<ScrapedManga | HttpError> {
     };
 
     try {
-        const scrapeUrl = `${SRC_BASE_URL}/manga/${id}`;
-        const content = await api.get(scrapeUrl);
+        const content = await client.get(`/manga/${id}`);
 
                         const $ = load(content.data);
 

@@ -1,6 +1,5 @@
-import { SRC_BASE_URL } from '../utils/index';
 import createHttpError, { type HttpError } from 'http-errors';
-import api from '../utils/axios';
+import { client } from '../utils/axios';
 import { AxiosError } from 'axios';
 import { load, type CheerioAPI } from 'cheerio';
 import { type Element } from 'domhandler';
@@ -17,8 +16,7 @@ async function scrapeLatestPage(pageType: LatestPageType, page: number = 1): Pro
     };
 
     try {
-        const scrapeUrl = `${SRC_BASE_URL}/${pageType}?page=${page}`;
-        const content = await api.get(scrapeUrl);
+        const content = await client.get(`/${pageType}?page=${page}`);
 
                         const $: CheerioAPI = load(content.data);
 

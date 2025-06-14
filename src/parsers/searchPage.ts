@@ -2,10 +2,7 @@ import { AxiosError } from 'axios';
 import { load, type CheerioAPI } from 'cheerio';
 import { type Element } from 'domhandler';
 import createHttpError, { HttpError } from 'http-errors';
-import {
-    SRC_BASE_URL
-} from '../utils/index';
-import api from '../utils/axios';
+import { client } from '../utils/axios';
 import {
     MangaChapter,
     ScrapedSearchResults,
@@ -20,9 +17,7 @@ export const scrapeSearchResults = async (keyword: string, page: number = 1): Pr
     };
 
     try {
-        const scrapeUrl = `${SRC_BASE_URL}/filter?keyword=${keyword}&page=${page}`;
-
-        const content = await api.get(scrapeUrl);
+        const content = await client.get(`/filter?keyword=${keyword}&page=${page}`);
 
         const $ = load(content.data);
 
