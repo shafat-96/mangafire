@@ -10,6 +10,7 @@ import scrapedMangaGenre from './parsers/genrePage';
 import { getChapters, getChapterImages, scrapeChaptersFromInfoPage } from './parsers/readPage';
 import scrapeLatestPage from './parsers/latestPage';
 import { Chapter, MangaChapter } from './types/parsers';
+import axios from 'axios';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -145,6 +146,38 @@ app.get('/api/:pageType', async (req: Request, res: Response, next: NextFunction
         const data = await scrapeLatestPage(pageType, Number(page));
 
         res.status(200).json(data);
+    } catch (err: any) {
+        next(err);
+    }
+});
+
+// Image proxy endpoint to handle CORS issues
+app.get('/proxy-image', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { url } = req.query;
+        
+        if (!url || typeof url !== 'string') {
+            throw createHttpError(400, 'Image URL is required');
+        }
+
+        // Fetch the image with proper headers
+        const response = await axios.get(url, {
+            responseType: 'stream',
+            headers: {
+                'Referer': 'https://mangafire.to/',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
+
+        // Set appropriate headers
+        res.set({
+            'Content-Type': response.headers['content-type'] || 'image/jpeg',
+            'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
+            'Access-Control-Allow-Origin': '*',
+        });
+
+        // Pipe the image data
+        response.data.pipe(res);
     } catch (err: any) {
         next(err);
     }
