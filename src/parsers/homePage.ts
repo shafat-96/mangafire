@@ -60,40 +60,41 @@ async function scrapeHomePage(): Promise<ScrapedHomePage | HttpError> {
         });
                                 $(mostViewedMangaDay).each((i: number, el: Element) => {
             res.mostViewedManga.day.push({
-                id: $(el).find('.swiper-slide    a')?.attr('href') || null,
-                name: $(el).find('.swiper-slide    a span')?.text()?.trim() || null,
-                rank: $(el).find('.swiper-slide    a b')?.text()?.trim() || null,
-                poster: $(el).find('.swiper-slide    a .poster img')?.attr('src')?.trim() || null
+                id: $(el).find('a')?.attr('href') || null,
+                name: $(el).find('a span')?.text()?.trim() || null,
+                rank: $(el).find('a b')?.text()?.trim() || null,
+                poster: $(el).find('a .poster img')?.attr('src')?.trim() || null
             });
         });
                                 $(mostViewedMangaWeek).each((i: number, el: Element) => {
             res.mostViewedManga.week.push({
-                id: $(el).find('.swiper-slide    a')?.attr('href') || null,
-                name: $(el).find('.swiper-slide    a span')?.text()?.trim() || null,
-                rank: $(el).find('.swiper-slide    a b')?.text()?.trim() || null,
-                poster: $(el).find('.swiper-slide    a .poster img')?.attr('src')?.trim() || null
+                id: $(el).find('a')?.attr('href') || null,
+                name: $(el).find('a span')?.text()?.trim() || null,
+                rank: $(el).find('a b')?.text()?.trim() || null,
+                poster: $(el).find('a .poster img')?.attr('src')?.trim() || null
             });
         });
                                 $(mostViewedMangaMonth).each((i: number, el: Element) => {
             res.mostViewedManga.month.push({
-                id: $(el).find('.swiper-slide  a')?.attr('href') || null,
-                name: $(el).find('.swiper-slide a span')?.text()?.trim() || null,
-                rank: $(el).find('.swiper-slide  a b')?.text()?.trim() || null,
-                poster: $(el).find('.swiper-slide  a .poster img')?.attr('src')?.trim() || null
+                id: $(el).find('a')?.attr('href') || null,
+                name: $(el).find('a span')?.text()?.trim() || null,
+                rank: $(el).find('a b')?.text()?.trim() || null,
+                poster: $(el).find('a .poster img')?.attr('src')?.trim() || null
             });
         });
                                 $(recentlyUpdatedManga).each((i: number, el: Element) => {
             res.recentlyUpdatedManga.push({
-                id: $(el).find('.inner  a')?.attr('href') || null,
-                name: $(el).find('.swiper-slide a span')?.text()?.trim() || null,
-                poster: $(el).find('.inner  a img')?.attr('src')?.trim() || null,
-                type: $(el).find('.inner .info div .type  ')?.text()?.trim() || null,
+                id: $(el).find('.inner > a')?.attr('href') || null,
+                name: $(el).find('.info > a')?.text()?.trim() || null,
+                poster: $(el).find('.inner > a img')?.attr('src')?.trim() || null,
+                type: $(el).find('.inner .info div .type')?.text()?.trim() || null,
                 latestChapters:
                     $(el)
                         .find('.info .content[data-name="chap"] li')
-                        ?.map((i: number, el: Element) => ({
-                            chapterName: $(el).find('span').first().text().trim(),
-                            releaseTime: $(el).find('span').last().text().trim()
+                        ?.map((i: number, chapterEl: Element) => ({
+                            id: $(chapterEl).find('a')?.attr('href') || null,
+                            chapterName: $(chapterEl).find('a span').first().text().trim(),
+                            releaseTime: $(chapterEl).find('a span').last().text().trim()
                         }))
                         .get() || null
             });
