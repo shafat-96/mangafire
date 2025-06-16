@@ -7,9 +7,9 @@ import { scrapeSearchResults } from './parsers/searchPage';
 import scrapedMangaCategory from './parsers/categoryPage';
 import { MangaCategories, MANGA_GENRES, MangaGenre } from './types/manga';
 import scrapedMangaGenre from './parsers/genrePage';
-import { getChapters, getChapterImages, scrapeChaptersFromInfoPage } from './parsers/readPage';
+import { getChapters, getChapterImages, scrapeChaptersFromInfoPage, getVolumes } from './parsers/readPage';
 import scrapeLatestPage from './parsers/latestPage';
-import { Chapter, MangaChapter } from './types/parsers';
+import { Chapter, MangaChapter, Language } from './types/parsers';
 import axios from 'axios';
 
 const app = express();
@@ -79,33 +79,40 @@ app.get('/api/genre/:genre', async (req: Request, res: Response, next: NextFunct
     }
 });
 
-app.get('/api/manga/:id/chapters/:lng', async (req: Request, res: Response, next: NextFunction) => {
+app.get('/api/manga/:id/chapters/:lng?', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id, lng } = req.params;
 
-        const chaptersResult = await getChapters(id, lng);
-        const scrapedChaptersResult = await scrapeChaptersFromInfoPage(id);
+        const result = await getChapters(id, lng);
 
-        if (!Array.isArray(chaptersResult)) {
-            return next(chaptersResult);
-        }
-        if (!Array.isArray(scrapedChaptersResult)) {
-            return next(scrapedChaptersResult);
+        if (!Array.isArray(result)) {
+            return next(result); // It's an HttpError
         }
 
-        const chapters: Chapter[] = chaptersResult;
-        const scrapedChapters: MangaChapter[] = scrapedChaptersResult;
+        if (lng) {
+            // result is Chapter[]
+            const scrapedChaptersResult = await scrapeChaptersFromInfoPage(id);
+            if (!Array.isArray(scrapedChaptersResult)) {
+                return next(scrapedChaptersResult);
+            }
+            
+            const chapters: Chapter[] = result as Chapter[];
+            const scrapedChapters: MangaChapter[] = scrapedChaptersResult;
 
-        const data = chapters.map((chapter: Chapter, index: number) => {
-            const scrapedChapter = scrapedChapters[index];
-            return {
-                ...chapter,
-                title: scrapedChapter?.title || chapter.title,
-                releaseDate: scrapedChapter?.releaseDate || chapter.releaseDate,
-            };
-        });
+            const data = chapters.map((chapter: Chapter, index: number) => {
+                const scrapedChapter = scrapedChapters[index];
+                return {
+                    ...chapter,
+                    title: scrapedChapter?.title || chapter.title,
+                    releaseDate: scrapedChapter?.releaseDate || chapter.releaseDate,
+                };
+            });
 
-        res.status(200).json(data);
+            return res.status(200).json(data);
+        }
+
+        // If no lng, result is Language[]
+        res.status(200).json({ languages: result });
     } catch (err: any) {
         next(err);
     }
@@ -122,6 +129,18 @@ app.get('/api/chapter/:chapterId', async (req: Request, res: Response, next: Nex
         next(err);
     }
 });
+
+app.get('/api/volumes/:id/:lang?', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id, lang } = req.params;
+        const data = await getVolumes(id, lang);
+        res.status(200).json(data);
+    } catch (err: any) {
+        next(err);
+    }
+});
+
+
 
 app.get('/api/manga/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {

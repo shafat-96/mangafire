@@ -1,7 +1,7 @@
 import createHttpError, { type HttpError } from 'http-errors';
 import { client } from '../utils/axios';
 import { AxiosError } from 'axios';
-import { load, type CheerioAPI } from 'cheerio';
+import { load } from 'cheerio';
 import { type Element } from 'domhandler';
 import { type ScrapedManga, type MangaDetails, type RelatedManga } from '../types/parsers/index';
 
@@ -27,7 +27,7 @@ async function scrapeMangaInfo(id: string): Promise<ScrapedManga | HttpError> {
     try {
         const content = await client.get(`/manga/${id}`);
 
-                        const $ = load(content.data);
+        const $ = load(content.data);
 
         const mangaInfo: MangaDetails = {
             title: $('h1[itemprop="name"]').text().trim(),
@@ -38,12 +38,12 @@ async function scrapeMangaInfo(id: string): Promise<ScrapedManga | HttpError> {
             description: $('.description').text().replace('Read more +', '').trim(),
             author: $('.meta div:contains("Author:") a').text().trim(),
             published: $('.meta div:contains("Published:")').text().replace('Published:', '').trim(),
-                        genres: $('.meta div:contains("Genres:") a').map((i: number, el: Element) => $(el).text().trim()).get(),
+            genres: $('.meta div:contains("Genres:") a').map((i: number, el: Element) => $(el).text().trim()).get(),
             rating: $('.rating-box .live-score').text().trim(),
         };
 
         // Scraping Similar Manga (Trending)
-                $('section.side-manga.default-style div.original.card-sm.body a.unit').each((i: number, el: Element) => {
+        $('section.side-manga.default-style div.original.card-sm.body a.unit').each((i: number, el: Element) => {
             const manga: RelatedManga = {
                 id: $(el).attr('href')?.split('/').pop() || null,
                 name: $(el).find('.info h6').text().trim() || null,

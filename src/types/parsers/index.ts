@@ -44,6 +44,7 @@ export interface MangaDetails {
     genres: string[] | null;
     rating: string | null;
     chapters?: MangaChapter[] | null;
+    languages?: Language[] | null;
 }
 
 export interface RelatedManga {
@@ -108,10 +109,25 @@ export interface Chapter {
     releaseDate: string | null;
 }
 
+export interface Volume {
+    id: string | null;
+    image: string | null;
+}
+
+export interface Language {
+    title: string | null;
+    id: string | null;
+    chapters: string | null;
+    logo: string | null;
+}
+
+
+
 export interface ScrapedManga {
     mangaInfo: MangaDetails;
     relatedManga: RelatedManga[];
     similarManga: RelatedManga[];
+    languages?: Language[] | null;
 }
 
 export interface ScrapedHomePage {

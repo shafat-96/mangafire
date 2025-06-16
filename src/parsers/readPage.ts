@@ -3,12 +3,43 @@ import { client } from '../utils/axios';
 import { AxiosError } from 'axios';
 import { load } from 'cheerio';
 import { type Element } from 'domhandler';
-import { type ScrapedManga, type MangaDetails, type MangaChapter, type RelatedManga, Chapter } from '../types/parsers/index';
+import { type MangaChapter, type Chapter, type Volume, type Language } from '../types/parsers/index';
+
+export async function getLanguages(mangaId: string): Promise<Language[] | HttpError> {
+    try {
+        const content = await client.get(`/manga/${mangaId}`);
+        const $ = load(content.data);
+        const languages: Language[] = [];
+
+        $('div[data-name="chapter"] .dropdown-menu a').each((_, el) => {
+            const item = $(el);
+            const text = item.text().trim();
+            const chaptersMatch = text.match(/\(([^)]+)\)/);
+            
+            languages.push({
+                id: item.attr('data-code') || null,
+                title: item.attr('data-title') || null,
+                chapters: chaptersMatch ? chaptersMatch[1] : null,
+                logo: null,
+            });
+        });
+
+        return languages;
+    } catch (err: any) {
+        if (err instanceof AxiosError) {
+            return createHttpError(err?.response?.status || 500, err?.response?.statusText || 'Something went wrong');
+        }
+        return createHttpError.InternalServerError(err?.message);
+    }
+}
 
 export async function getChapters(
     mangaId: string,
-    language: string = "en"
-): Promise<Chapter[] | HttpError> {
+    language?: string
+): Promise<Chapter[] | Language[] | HttpError> {
+    if (!language) {
+        return getLanguages(mangaId);
+    }
     try {
         const response = await client.get(
             `/ajax/read/${mangaId.split(".")[1]}/chapter/${language.toLowerCase()}`,
@@ -23,7 +54,7 @@ export async function getChapters(
         const $ = load(responseJson.result.html);
         const chapters: Chapter[] = [];
 
-                $("li").each((_: number, li: Element) => {
+        $("li").each((_: number, li: Element) => {
             const a = $(li).find("a");
             const title = a.find('span:first-child').text().trim();
             const releaseDate = a.find('span:last-child').text().trim();
@@ -39,9 +70,9 @@ export async function getChapters(
         return chapters;
     } catch (err: any) {
         if (err instanceof AxiosError) {
-            throw createHttpError(err?.response?.status || 500, err?.response?.statusText || 'Something went wrong');
+            return createHttpError(err?.response?.status || 500, err?.response?.statusText || 'Something went wrong');
         }
-        throw createHttpError.InternalServerError(err?.message);
+        return createHttpError.InternalServerError(err?.message);
     }
 }
 
@@ -92,3 +123,38 @@ export async function scrapeChaptersFromInfoPage(mangaSlug: string): Promise<Man
         throw createHttpError.InternalServerError(err?.message);
     }
 }
+
+export async function getVolumes(mangaId: string, language: string = "en"): Promise<Volume[] | HttpError> {
+    try {
+        const actualId = mangaId.split('.').pop();
+        const response = await client.get(
+            `/ajax/manga/${actualId}/volume/${language.toLowerCase()}`,
+            {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            }
+        );
+
+        const responseJson: { result: string } = response.data;
+        const $ = load(responseJson.result);
+        const volumes: Volume[] = [];
+
+        $('.unit').each((_: number, element: Element) => {
+            const image = $(element).find('img').attr('src');
+            volumes.push({
+                id: $(element).find('a').attr('href') || null,
+                image: image?.startsWith('http') ? image : `https://mangafire.to${image}`,
+            });
+        });
+
+        return volumes;
+    } catch (err: any) {
+        if (err instanceof AxiosError) {
+            throw createHttpError(err?.response?.status || 500, err?.response?.statusText || 'Something went wrong');
+        }
+        throw createHttpError.InternalServerError(err?.message);
+    }
+}
+
+

@@ -60,13 +60,19 @@ All endpoints are available under the `/api` path.
 
 ### Chapters
 
--   **GET `/api/manga/:id/chapters/:lng`**
+-   **GET `/api/manga/:id/chapters/:lng?`**
 
-    Retrieves the list of chapters for a manga in a specific language (e.g., `en`, `fr`).
+    Retrieves the chapters for a specific manga and language. If the `lng` parameter is omitted, it will return a list of available languages for the manga.
 
 -   **GET `/api/chapter/:chapterId`**
 
     Gets the images for a specific chapter.
+
+### Volumes
+
+-   **GET `/api/volumes/:id/:lang?`**
+
+    Retrieves the volumes for a specific manga. The `lang` parameter is optional and defaults to `en`.
 
 ### Categories and Genres
 
