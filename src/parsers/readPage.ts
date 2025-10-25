@@ -14,12 +14,12 @@ export async function getLanguages(mangaId: string): Promise<Language[] | HttpEr
         $('div[data-name="chapter"] .dropdown-menu a').each((_, el) => {
             const item = $(el);
             const text = item.text().trim();
-            const chaptersMatch = text.match(/\(([^)]+)\)/);
-            
+            const chaptersMatch = text.match(/\((\d+)\s*Chapters?\)/i);
+
             languages.push({
                 id: item.attr('data-code') || null,
                 title: item.attr('data-title') || null,
-                chapters: chaptersMatch ? chaptersMatch[1] : null,
+                chapters: chaptersMatch ? `${chaptersMatch[1]} Chapters` : null,
                 logo: null,
             });
         });
