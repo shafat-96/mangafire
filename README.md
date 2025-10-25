@@ -28,7 +28,13 @@ Make sure you have the following installed:
     npm install
     ```
 
-3.  **Start the server:**
+3.  **Build the project:**
+
+    ```bash
+    npm run build
+    ```
+
+4.  **Start the server:**
 
     ```bash
     npm start
